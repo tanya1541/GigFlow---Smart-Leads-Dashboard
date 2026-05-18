@@ -131,3 +131,36 @@ export const updateLead = async (req: AuthRequest, res: Response) => {
     });
   }
 };
+
+export const deleteLead = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    // RBAC: only admin
+    if (req.user!.role !== "admin") {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied",
+      });
+    }
+
+    const lead = await Lead.findByIdAndDelete(id);
+
+    if (!lead) {
+      return res.status(404).json({
+        success: false,
+        message: "Lead not found",
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "Lead deleted successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
