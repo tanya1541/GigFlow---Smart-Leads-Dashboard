@@ -7,13 +7,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Health route
-app.get("/", (req, res) => {
-  res.send("API Running...");
-});
-
 import authRoutes from "./routes/auth.routes";
+import leadRoutes from "./routes/lead.routes";
 
 app.use("/api/auth", authRoutes);
-
+app.use("/api/lead", leadRoutes);
 export default app;

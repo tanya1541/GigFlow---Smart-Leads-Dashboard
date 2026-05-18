@@ -2,9 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import User from "../models/User";
 
-export interface AuthRequest extends Request {
-  user?: any;
-}
+import AuthRequest from '../types/interfaces.ts';
 
 export const protect = async (
   req: AuthRequest,
