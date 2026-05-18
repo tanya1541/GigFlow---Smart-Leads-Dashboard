@@ -2,6 +2,8 @@ import { Response } from "express";
 import Lead from "../models/Lead";
 import { leadSchema } from "../utils/validators";
 import { AuthRequest } from "../middlewares/auth.middleware";
+import { FilterQuery } from "mongoose";
+import { ILead } from "../types/interfaces";
 
 export const createLead = async (req: AuthRequest, res: Response) => {
   try {
@@ -41,7 +43,7 @@ export const getLeads = async (req: AuthRequest, res: Response) => {
     const pageNumber = parseInt(page as string) || 1;
     const skip = (pageNumber - 1) * limit;
 
-    const query: any = {
+    const query: FilterQuery<ILead> = {
       createdBy: req.user!._id,
     };
 
@@ -81,6 +83,48 @@ export const getLeads = async (req: AuthRequest, res: Response) => {
     });
   } catch (error) {
     console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
+
+export const updateLead = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    const parsed = leadSchema.partial().safeParse(req.body);
+
+    if (!parsed.success) {
+      return res.status(400).json({
+        success: false,
+        message: parsed.error.errors[0].message,
+      });
+    }
+
+    const lead = await Lead.findOneAndUpdate(
+      {
+        _id: id,
+        createdBy: req.user!._id, // ownership check
+      },
+      parsed.data,
+      { new: true }
+    );
+
+    if (!lead) {
+      return res.status(404).json({
+        success: false,
+        message: "Lead not found",
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "Lead updated successfully",
+      data: lead,
+    });
+  } catch (error) {
     res.status(500).json({
       success: false,
       message: "Server error",
